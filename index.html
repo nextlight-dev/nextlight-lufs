@@ -105,6 +105,56 @@
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 4px;
     }
+
+    /* Batch section */
+    .divider {
+      border: none;
+      border-top: 1px solid #27272a;
+      margin: 48px 0 32px;
+    }
+    h2 { font-size: 1rem; font-weight: 700; margin-bottom: 16px; }
+
+    .batch-progress {
+      margin-top: 16px;
+      font-size: 0.875rem;
+      color: #a1a1aa;
+      display: none;
+    }
+    .batch-progress.show {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .batch-results { display: none; margin-top: 16px; }
+    .batch-results.show { display: block; }
+
+    .batch-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    .batch-table th {
+      text-align: left;
+      color: #71717a;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-bottom: 1px solid #27272a;
+      white-space: nowrap;
+    }
+    .batch-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1e1e22;
+    }
+    .batch-table .fname {
+      max-width: 240px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .batch-table .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .batch-table .unit-cell { color: #71717a; font-size: 0.7rem; padding-left: 2px; }
+    .batch-table .error-row td { color: #71717a; }
   </style>
 </head>
 <body>
@@ -144,6 +194,31 @@
       </div>
 
       <div class="info" id="info"></div>
+    </div>
+
+    <hr class="divider">
+
+    <h2>一括測定</h2>
+    <div class="dropzone" id="batchDropzone">
+      <p>複数の音源ファイルをドロップ、またはクリックして選択</p>
+      <p class="hint">最大10曲 / WAV / MP3 / FLAC / OGG / AAC 対応</p>
+      <input type="file" id="batchFileInput" accept="audio/*" multiple>
+    </div>
+
+    <div class="batch-progress" id="batchProgress"></div>
+
+    <div class="batch-results" id="batchResults">
+      <table class="batch-table">
+        <thead>
+          <tr>
+            <th>ファイル名</th>
+            <th style="text-align:right">Integrated</th>
+            <th style="text-align:right">True Peak</th>
+            <th style="text-align:right">LRA</th>
+          </tr>
+        </thead>
+        <tbody id="batchBody"></tbody>
+      </table>
     </div>
   </div>
 

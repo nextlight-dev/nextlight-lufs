@@ -100,6 +100,82 @@ function showResults(name, data) {
   results.classList.add('show')
 }
 
+// --- Batch measurement ---
+const batchDropzone = document.getElementById('batchDropzone')
+const batchFileInput = document.getElementById('batchFileInput')
+const batchProgress = document.getElementById('batchProgress')
+const batchResults = document.getElementById('batchResults')
+const batchBody = document.getElementById('batchBody')
+
+batchDropzone.addEventListener('click', () => batchFileInput.click())
+batchDropzone.addEventListener('dragover', (e) => {
+  e.preventDefault()
+  batchDropzone.classList.add('dragover')
+})
+batchDropzone.addEventListener('dragleave', () => batchDropzone.classList.remove('dragover'))
+batchDropzone.addEventListener('drop', (e) => {
+  e.preventDefault()
+  batchDropzone.classList.remove('dragover')
+  if (e.dataTransfer.files.length) handleBatch(e.dataTransfer.files)
+})
+batchFileInput.addEventListener('change', () => {
+  if (batchFileInput.files.length) handleBatch(batchFileInput.files)
+})
+
+function getTpClass(tp) {
+  if (tp <= -1) return 'pass'
+  if (tp <= 0) return 'warn'
+  return 'fail'
+}
+
+async function handleBatch(fileList) {
+  const files = Array.from(fileList).slice(0, 10)
+  batchBody.innerHTML = ''
+  batchResults.classList.add('show')
+
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    batchProgress.innerHTML = `<div class="spinner"></div><span>${i + 1} / ${files.length} 測定中: ${file.name}</span>`
+    batchProgress.classList.add('show')
+
+    // Let UI update
+    await new Promise(r => requestAnimationFrame(r))
+    await new Promise(r => setTimeout(r, 50))
+
+    try {
+      const arrayBuffer = await file.arrayBuffer()
+      const audioCtx = new AudioContext()
+      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
+      await audioCtx.close()
+
+      const data = measureLUFS(audioBuffer)
+      const intVal = data.integrated === -Infinity ? '--' : data.integrated.toFixed(1)
+      const tpVal = data.truePeak === -Infinity ? '--' : data.truePeak.toFixed(1)
+
+      const tr = document.createElement('tr')
+      tr.innerHTML = `
+        <td class="fname" title="${file.name}">${file.name}</td>
+        <td class="num"><span class="${getLufsClass(data.integrated)}">${intVal}</span><span class="unit-cell"> LUFS</span></td>
+        <td class="num"><span class="${getTpClass(data.truePeak)}">${tpVal}</span><span class="unit-cell"> dBTP</span></td>
+        <td class="num">${data.lra.toFixed(1)}<span class="unit-cell"> LU</span></td>
+      `
+      batchBody.appendChild(tr)
+    } catch (err) {
+      console.error(err)
+      const tr = document.createElement('tr')
+      tr.className = 'error-row'
+      tr.innerHTML = `
+        <td class="fname" title="${file.name}">${file.name}</td>
+        <td colspan="3" style="color:#f87171">エラー: 対応していない形式</td>
+      `
+      batchBody.appendChild(tr)
+    }
+  }
+
+  batchProgress.classList.remove('show')
+  batchProgress.innerHTML = ''
+}
+
 function renderChart(data) {
   const ctx = document.getElementById('chart').getContext('2d')
 

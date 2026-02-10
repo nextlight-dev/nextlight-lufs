@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NEXTLIGHT — 2025 Year in Review</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #09090b;
+      --bg-card: #18181b;
+      --border: #27272a;
+      --text: #e4e4e7;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --text-faint: #52525b;
+      --purple: #a78bfa;
+      --purple-glow: rgba(167, 139, 250, 0.15);
+      --violet: #8b5cf6;
+      --pink: #f472b6;
+      --cyan: #22d3ee;
+      --green: #4ade80;
+      --amber: #fbbf24;
+    }
+
+    html {
+      scroll-snap-type: y mandatory;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ─── Sections ─── */
+    section {
+      min-height: 100vh;
+      min-height: 100dvh;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(139,92,246,0.12) 0%, transparent 70%),
+                  var(--bg);
+    }
+
+    .hero-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.2s ease forwards;
+    }
+
+    .hero-title {
+      font-size: clamp(2.5rem, 8vw, 6rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+      text-align: center;
+      margin-bottom: 8px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.4s ease forwards;
+    }
+
+    .hero-title .gradient {
+      background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 50%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-year {
+      font-size: clamp(4rem, 12vw, 10rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: var(--text-faint);
+      opacity: 0.15;
+      margin-bottom: 32px;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.6s ease forwards;
+    }
+
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+      text-align: center;
+      max-width: 480px;
+      line-height: 1.6;
+      opacity: 0;
+      animation: fadeUp 0.8s 0.8s ease forwards;
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-faint);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      opacity: 0;
+      animation: fadeUp 0.8s 1.2s ease forwards;
+    }
+
+    .scroll-arrow {
+      width: 20px;
+      height: 20px;
+      border-right: 2px solid var(--text-faint);
+      border-bottom: 2px solid var(--text-faint);
+      transform: rotate(45deg);
+      animation: bounce 2s infinite;
+    }
+
+    /* ─── Stat Section ─── */
+    .stat-section {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 16px;
+    }
+
+    .stat-number {
+      font-size: clamp(4rem, 15vw, 12rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      margin-bottom: 16px;
+    }
+
+    .stat-unit {
+      font-size: clamp(1.2rem, 4vw, 2rem);
+      font-weight: 300;
+      color: var(--text-muted);
+      margin-left: 8px;
+    }
+
+    .stat-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      line-height: 1.6;
+      margin-top: 8px;
+    }
+
+    /* Color variants */
+    .color-purple .stat-number { color: var(--purple); }
+    .color-pink .stat-number { color: var(--pink); }
+    .color-cyan .stat-number { color: var(--cyan); }
+    .color-green .stat-number { color: var(--green); }
+    .color-amber .stat-number { color: var(--amber); }
+
+    .color-purple { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(167,139,250,0.06) 0%, transparent 70%), var(--bg); }
+    .color-pink { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(244,114,182,0.06) 0%, transparent 70%), var(--bg); }
+    .color-cyan { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(34,211,238,0.06) 0%, transparent 70%), var(--bg); }
+    .color-green { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(74,222,128,0.06) 0%, transparent 70%), var(--bg); }
+    .color-amber { background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(251,191,36,0.06) 0%, transparent 70%), var(--bg); }
+
+    /* ─── Top Artists Section ─── */
+    .top-list {
+      width: 100%;
+      max-width: 560px;
+    }
+
+    .top-list-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .top-item {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .top-item:last-child { border-bottom: none; }
+
+    .top-rank {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-faint);
+      width: 40px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+
+    .top-rank.gold { color: #fbbf24; }
+    .top-rank.silver { color: #94a3b8; }
+    .top-rank.bronze { color: #d97706; }
+
+    .top-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--bg);
+    }
+
+    .top-info { flex: 1; min-width: 0; }
+
+    .top-name {
+      font-weight: 600;
+      font-size: 1rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-meta {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .top-plays {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ─── Genre Breakdown ─── */
+    .genre-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .genre-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px 16px;
+      text-align: center;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+
+    .genre-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--purple);
+    }
+
+    .genre-emoji {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+
+    .genre-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .genre-pct {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--purple);
+    }
+
+    .genre-bar {
+      height: 3px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+
+    .genre-bar-fill {
+      height: 100%;
+      background: var(--purple);
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    /* ─── Monthly Chart ─── */
+    .chart-wrap {
+      width: 100%;
+      max-width: 640px;
+    }
+
+    .monthly-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 200px;
+      padding: 0 8px;
+      margin-top: 24px;
+    }
+
+    .month-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .month-bar {
+      width: 100%;
+      border-radius: 4px 4px 0 0;
+      background: linear-gradient(180deg, var(--purple) 0%, var(--violet) 100%);
+      transition: height 1s cubic-bezier(0.16, 1, 0.3, 1);
+      min-height: 4px;
+      position: relative;
+    }
+
+    .month-bar:hover {
+      filter: brightness(1.2);
+    }
+
+    .month-bar .tooltip {
+      position: absolute;
+      top: -28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+
+    .month-bar:hover .tooltip {
+      opacity: 1;
+    }
+
+    .month-label {
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    /* ─── Milestone Timeline ─── */
+    .timeline {
+      width: 100%;
+      max-width: 560px;
+      position: relative;
+      padding-left: 32px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 7px;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: linear-gradient(180deg, var(--purple), var(--pink), var(--cyan));
+      border-radius: 1px;
+    }
+
+    .timeline-item {
+      position: relative;
+      padding-bottom: 32px;
+    }
+
+    .timeline-item:last-child { padding-bottom: 0; }
+
+    .timeline-dot {
+      position: absolute;
+      left: -29px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--purple);
+      border: 2px solid var(--bg);
+    }
+
+    .timeline-date {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      margin-bottom: 4px;
+    }
+
+    .timeline-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .timeline-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* ─── Closing / CTA ─── */
+    .closing {
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(139,92,246,0.1) 0%, transparent 70%),
+                  var(--bg);
+      text-align: center;
+    }
+
+    .closing-title {
+      font-size: clamp(2rem, 6vw, 4rem);
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .closing-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 480px;
+      line-height: 1.6;
+      margin-bottom: 40px;
+    }
+
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--purple), var(--violet));
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: 999px;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(139,92,246,0.3);
+    }
+
+    .footer-note {
+      position: absolute;
+      bottom: 24px;
+      font-size: 0.7rem;
+      color: var(--text-faint);
+      letter-spacing: 0.05em;
+    }
+
+    /* ─── Scroll-triggered Animations ─── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+    .reveal-delay-4 { transition-delay: 0.4s; }
+    .reveal-delay-5 { transition-delay: 0.5s; }
+    .reveal-delay-6 { transition-delay: 0.6s; }
+
+    /* ─── Floating Particles (background decoration) ─── */
+    .particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      opacity: 0.08;
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      0% { transform: translateY(100vh) rotate(0deg); }
+      100% { transform: translateY(-100px) rotate(360deg); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes bounce {
+      0%, 20%, 50%, 80%, 100% { transform: rotate(45deg) translateY(0); }
+      40% { transform: rotate(45deg) translateY(8px); }
+      60% { transform: rotate(45deg) translateY(4px); }
+    }
+
+    @keyframes countUp {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    /* ─── Navigation dots ─── */
+    .nav-dots {
+      position: fixed;
+      right: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      z-index: 100;
+    }
+
+    .nav-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--text-faint);
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      padding: 0;
+    }
+
+    .nav-dot.active {
+      background: var(--purple);
+      transform: scale(1.4);
+    }
+
+    /* ─── Progress bar ─── */
+    .progress-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--purple), var(--pink), var(--cyan));
+      z-index: 200;
+      transition: width 0.15s ease;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 640px) {
+      section { padding: 32px 20px; }
+      .nav-dots { right: 10px; gap: 10px; }
+      .nav-dot { width: 6px; height: 6px; }
+      .genre-grid { grid-template-columns: repeat(2, 1fr); }
+      .monthly-chart { height: 140px; }
+      .top-avatar { width: 40px; height: 40px; font-size: 0.85rem; }
+    }
+
+    section > * { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- Progress Bar -->
+  <div class="progress-bar" id="progressBar"></div>
+
+  <!-- Navigation Dots -->
+  <nav class="nav-dots" id="navDots"></nav>
+
+  <!-- Floating Particles -->
+  <div class="particles" id="particles"></div>
+
+  <!-- ========== SECTION 1: HERO ========== -->
+  <section class="hero" id="s-hero">
+    <div class="hero-label">NEXTLIGHT PRESENTS</div>
+    <div class="hero-title"><span class="gradient">Year in Review</span></div>
+    <div class="hero-year">2025</div>
+    <p class="hero-sub">
+      NEXTLIGHTの2025年を振り返る。<br>
+      数字で見る、1年間の軌跡。
+    </p>
+    <div class="scroll-hint">
+      SCROLL
+      <div class="scroll-arrow"></div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 2: Total Releases ========== -->
+  <section class="stat-section color-purple" id="s-releases">
+    <div class="stat-label reveal">TOTAL RELEASES</div>
+    <div class="stat-number reveal reveal-delay-1">
+      <span class="counter" data-target="48">0</span><span class="stat-unit">tracks</span>
+    </div>
+    <p class="stat-desc reveal reveal-delay-2">
+      2025��にリリースされた楽曲の総数。<br>
+      毎月約4曲のペースで新しい音楽を届けた。
+    </p>
+  </section>
+
+  <!-- ========== SECTION 3: Artists ========== -->
+  <section class="stat-section color-pink" id="s-artists">
+    <div class="stat-label reveal">PARTICIPATING ARTISTS</div>
+    <div class="stat-number reveal reveal-delay-1">
+      <span class="counter" data-target="23">0</span><span class="stat-unit">artists</span>
+    </div>
+    <p class="stat-desc reveal reveal-delay-2">
+      国内外から集まった才能あるアーティストたち。<br>
+      新規参加は12名、うち海外アーティストは5名。
+    </p>
+  </section>
+
+  <!-- ========== SECTION 4: Total Streams ========== -->
+  <section class="stat-section color-cyan" id="s-streams">
+    <div class="stat-label reveal">TOTAL STREAMS</div>
+    <div class="stat-number reveal reveal-delay-1">
+      <span class="counter" data-target="2.4" data-decimals="1">0</span><span class="stat-unit">M plays</span>
+    </div>
+    <p class="stat-desc reveal reveal-delay-2">
+      全プラットフォーム合算の年間総再生数。<br>
+      前年比 +180% の成長を達成。
+    </p>
+  </section>
+
+  <!-- ========== SECTION 5: Monthly Breakdown ========== -->
+  <section class="stat-section" id="s-monthly">
+    <div class="chart-wrap">
+      <div class="stat-label reveal">MONTHLY STREAMS</div>
+      <p class="stat-desc reveal reveal-delay-1" style="text-align:center;margin-bottom:8px">月別のストリーム数推移</p>
+      <div class="monthly-chart reveal reveal-delay-2" id="monthlyChart">
+        <!-- JS fills -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 6: Top Artists ========== -->
+  <section class="stat-section" id="s-top-artists">
+    <div class="top-list">
+      <div class="top-list-title reveal">TOP ARTISTS BY STREAMS</div>
+      <div id="topArtistsList">
+        <!-- JS fills -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== SECTION 7: Genre Breakdown ========== -->
+  <section class="stat-section" id="s-genres">
+    <div class="stat-label reveal" style="margin-bottom:24px">GENRE BREAKDOWN</div>
+    <div class="genre-grid" id="genreGrid">
+      <!-- JS fills -->
+    </div>
+  </section>
+
+  <!-- ========== SECTION 8: Listeners ========== -->
+  <section class="stat-section color-green" id="s-listeners">
+    <div class="stat-label reveal">UNIQUE LISTENERS</div>
+    <div class="stat-number reveal reveal-delay-1">
+      <span class="counter" data-target="840" data-suffix="K+">0</span>
+    </div>
+    <p class="stat-desc reveal reveal-delay-2">
+      NEXTLIGHTの音楽を聴いたユニークリスナー数。<br>
+      リスナーの43%は海外から。
+    </p>
+  </section>
+
+  <!-- ========== SECTION 9: Milestones ========== -->
+  <section class="stat-section" id="s-milestones">
+    <div class="stat-label reveal" style="margin-bottom:32px">2025 MILESTONES</div>
+    <div class="timeline reveal reveal-delay-1" id="timeline">
+      <!-- JS fills -->
+    </div>
+  </section>
+
+  <!-- ========== SECTION 10: Avg LUFS ========== -->
+  <section class="stat-section color-amber" id="s-lufs">
+    <div class="stat-label reveal">AVERAGE MASTERING LOUDNESS</div>
+    <div class="stat-number reveal reveal-delay-1">
+      <span class="counter" data-target="-9.2" data-decimals="1" data-negative="true">0</span><span class="stat-unit">LUFS</span>
+    </div>
+    <p class="stat-desc reveal reveal-delay-2">
+      全リリースの平均ラウドネス。<br>
+      クラブでも配信でも映える、NEXTLIGHTのサウンド基準。
+    </p>
+  </section>
+
+  <!-- ========== SECTION 11: Closing ========== -->
+  <section class="closing" id="s-closing">
+    <div class="closing-title reveal">
+      <span class="gradient">2026年も、</span><br>
+      <span class="gradient">次の光を灯す。</span>
+    </div>
+    <p class="closing-sub reveal reveal-delay-1">
+      NEXTLIGHTはこれからも新しい才能と音楽をサポートし、<br>
+      リスナーの皆さんに届け続けます。
+    </p>
+    <a href="#" class="cta-btn reveal reveal-delay-2">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      NEXTLIGHTを聴く
+    </a>
+    <div class="footer-note">NEXTLIGHT &copy; 2025. All rights reserved.</div>
+  </section>
+
+  <script>
+    /* ─── Data ─── */
+    const monthlyData = [
+      { month: 'Jan', streams: 120000 },
+      { month: 'Feb', streams: 145000 },
+      { month: 'Mar', streams: 168000 },
+      { month: 'Apr', streams: 155000 },
+      { month: 'May', streams: 190000 },
+      { month: 'Jun', streams: 210000 },
+      { month: 'Jul', streams: 230000 },
+      { month: 'Aug', streams: 195000 },
+      { month: 'Sep', streams: 260000 },
+      { month: 'Oct', streams: 290000 },
+      { month: 'Nov', streams: 320000 },
+      { month: 'Dec', streams: 340000 },
+    ];
+
+    const topArtists = [
+      { name: 'Yūki Arisawa', streams: '412K', color: '#a78bfa' },
+      { name: 'SØLACE', streams: '358K', color: '#f472b6' },
+      { name: 'Neon Drift', streams: '287K', color: '#22d3ee' },
+      { name: 'Haruka Mitsuki', streams: '234K', color: '#4ade80' },
+      { name: 'KZMK', streams: '198K', color: '#fbbf24' },
+    ];
+
+    const genres = [
+      { name: 'Future Bass', pct: 32 },
+      { name: 'Lo-Fi', pct: 22 },
+      { name: 'House', pct: 18 },
+      { name: 'Drum & Bass', pct: 12 },
+      { name: 'Ambient', pct: 9 },
+      { name: 'Other', pct: 7 },
+    ];
+
+    const milestones = [
+      { date: '2025.02', title: '初のコンピレーション・アルバムをリリース', desc: '「NEXTLIGHT Vol.1」— 全12曲、8アーティスト参加。' },
+      { date: '2025.05', title: 'Spotify公式プレイリストに選出', desc: '「Fresh Finds: Japan」に2曲が掲載。新規リスナーが急増。' },
+      { date: '2025.07', title: '100万再生突破', desc: 'レーベル設立から1年3ヶ月で累計100万ストリームを達成。' },
+      { date: '2025.09', title: '初の海外アーティスト契約', desc: 'ベルリンとLAから2組のアーティストが加入。' },
+      { date: '2025.11', title: '初のライブイベント開催', desc: '東京・渋谷にて「NEXTLIGHT LIVE 001」を開催。チケット完売。' },
+    ];
+
+    /* ─── Build Monthly Chart ─── */
+    const chartEl = document.getElementById('monthlyChart');
+    const maxStreams = Math.max(...monthlyData.map(d => d.streams));
+    monthlyData.forEach(d => {
+      const col = document.createElement('div');
+      col.className = 'month-col';
+      const pct = (d.streams / maxStreams) * 100;
+      col.innerHTML = `
+        <div class="month-bar" style="height:0%" data-height="${pct}%">
+          <span class="tooltip">${(d.streams / 1000).toFixed(0)}K</span>
+        </div>
+        <span class="month-label">${d.month}</span>
+      `;
+      chartEl.appendChild(col);
+    });
+
+    /* ─── Build Top Artists ─── */
+    const topListEl = document.getElementById('topArtistsList');
+    const rankClasses = ['gold', 'silver', 'bronze', '', ''];
+    topArtists.forEach((a, i) => {
+      const item = document.createElement('div');
+      item.className = `top-item reveal reveal-delay-${i + 1}`;
+      const initials = a.name.split(' ').map(w => w[0]).join('').slice(0, 2);
+      item.innerHTML = `
+        <div class="top-rank ${rankClasses[i]}">${i + 1}</div>
+        <div class="top-avatar" style="background:${a.color}">${initials}</div>
+        <div class="top-info">
+          <div class="top-name">${a.name}</div>
+          <div class="top-meta">NEXTLIGHT artist</div>
+        </div>
+        <div class="top-plays">${a.streams}</div>
+      `;
+      topListEl.appendChild(item);
+    });
+
+    /* ─── Build Genre Grid ─── */
+    const genreEl = document.getElementById('genreGrid');
+    const genreColors = ['#a78bfa', '#f472b6', '#22d3ee', '#4ade80', '#fbbf24', '#71717a'];
+    genres.forEach((g, i) => {
+      const card = document.createElement('div');
+      card.className = `genre-card reveal reveal-delay-${i + 1}`;
+      card.innerHTML = `
+        <div class="genre-name">${g.name}</div>
+        <div class="genre-pct" style="color:${genreColors[i]}">${g.pct}%</div>
+        <div class="genre-bar">
+          <div class="genre-bar-fill" style="width:0%;background:${genreColors[i]}" data-width="${g.pct}%"></div>
+        </div>
+      `;
+      genreEl.appendChild(card);
+    });
+
+    /* ─── Build Timeline ─── */
+    const timelineEl = document.getElementById('timeline');
+    milestones.forEach((m, i) => {
+      const item = document.createElement('div');
+      item.className = `timeline-item reveal reveal-delay-${i + 1}`;
+      item.innerHTML = `
+        <div class="timeline-dot"></div>
+        <div class="timeline-date">${m.date}</div>
+        <div class="timeline-title">${m.title}</div>
+        <div class="timeline-desc">${m.desc}</div>
+      `;
+      timelineEl.appendChild(item);
+    });
+
+    /* ─── Build Nav Dots ─── */
+    const sections = document.querySelectorAll('section');
+    const navDotsEl = document.getElementById('navDots');
+    sections.forEach((s, i) => {
+      const dot = document.createElement('button');
+      dot.className = 'nav-dot';
+      dot.addEventListener('click', () => s.scrollIntoView({ behavior: 'smooth' }));
+      navDotsEl.appendChild(dot);
+    });
+
+    /* ─── Build Particles ─── */
+    const particlesEl = document.getElementById('particles');
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('div');
+      p.className = 'particle';
+      const size = Math.random() * 4 + 2;
+      const colors = ['var(--purple)', 'var(--pink)', 'var(--cyan)'];
+      p.style.cssText = `
+        width:${size}px;height:${size}px;
+        left:${Math.random() * 100}%;
+        background:${colors[Math.floor(Math.random() * colors.length)]};
+        animation-duration:${Math.random() * 20 + 15}s;
+        animation-delay:${Math.random() * 10}s;
+      `;
+      particlesEl.appendChild(p);
+    }
+
+    /* ─── Intersection Observer for reveal animations ─── */
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          // Animate genre bar fills
+          entry.target.querySelectorAll('.genre-bar-fill[data-width]').forEach(bar => {
+            setTimeout(() => { bar.style.width = bar.dataset.width; }, 300);
+          });
+          // Animate month bars
+          entry.target.querySelectorAll('.month-bar[data-height]').forEach(bar => {
+            setTimeout(() => { bar.style.height = bar.dataset.height; }, 300);
+          });
+        }
+      });
+    }, { threshold: 0.2 });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    /* ─── Counter Animation ─── */
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.counted) {
+          entry.target.dataset.counted = 'true';
+          animateCounter(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.counter').forEach(el => counterObserver.observe(el));
+
+    function animateCounter(el) {
+      const target = parseFloat(el.dataset.target);
+      const decimals = parseInt(el.dataset.decimals) || 0;
+      const isNeg = el.dataset.negative === 'true';
+      const suffix = el.dataset.suffix || '';
+      const duration = 2000;
+      const start = performance.now();
+      const absTarget = Math.abs(target);
+
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+        const current = eased * absTarget;
+        const display = decimals > 0 ? current.toFixed(decimals) : Math.floor(current).toString();
+        el.textContent = (isNeg ? '-' : '') + display + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    /* ─── Scroll: progress bar + active nav dot ─── */
+    const progressBar = document.getElementById('progressBar');
+    const navDots = document.querySelectorAll('.nav-dot');
+
+    function onScroll() {
+      const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
+      const scrollHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+      progressBar.style.width = pct + '%';
+
+      // Active section
+      let activeIdx = 0;
+      sections.forEach((s, i) => {
+        const rect = s.getBoundingClientRect();
+        if (rect.top <= window.innerHeight / 2) activeIdx = i;
+      });
+      navDots.forEach((d, i) => d.classList.toggle('active', i === activeIdx));
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  </script>
+</body>
+</html>

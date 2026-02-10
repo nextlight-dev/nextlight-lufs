@@ -82,6 +82,7 @@
     .metric .label { font-size: 0.75rem; color: #71717a; margin-bottom: 4px; }
     .metric .value { font-size: 1.5rem; font-weight: 700; }
     .metric .unit { font-size: 0.75rem; color: #71717a; margin-left: 2px; }
+    .metric .desc { font-size: 0.7rem; color: #52525b; margin-top: 8px; line-height: 1.4; }
 
     .pass { color: #4ade80; }
     .warn { color: #facc15; }
@@ -124,14 +125,17 @@
         <div class="metric">
           <div class="label">Integrated Loudness</div>
           <div><span class="value" id="integrated">--</span><span class="unit">LUFS</span></div>
+          <div class="desc">楽曲全体の平均的な音の大きさ。配信では -14〜-7 LUFS が一般的。</div>
         </div>
         <div class="metric">
           <div class="label">True Peak</div>
           <div><span class="value" id="truePeak">--</span><span class="unit">dBTP</span></div>
+          <div class="desc">瞬間的な音量の最大値。0 dBTP を超えると音割れの原因になる。-1 dBTP 以下が安全。</div>
         </div>
         <div class="metric">
           <div class="label">Loudness Range</div>
           <div><span class="value" id="lra">--</span><span class="unit">LU</span></div>
+          <div class="desc">曲中の音量差の幅。値が大きいほどダイナミクスが広い。</div>
         </div>
       </div>
 

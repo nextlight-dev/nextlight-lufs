@@ -106,7 +106,7 @@ function renderChart(data) {
   if (chart) chart.destroy()
 
   // Clamp values for display
-  const clamp = (v) => Math.max(-40, Math.min(0, v))
+  const clamp = (v) => Math.max(-20, Math.min(0, v))
   const momentaryData = data.momentary.map(clamp)
   const shortTermData = data.shortTermTimes.map((t, i) => ({
     x: t,
@@ -176,7 +176,7 @@ function renderChart(data) {
         },
         y: {
           display: true,
-          min: -40,
+          min: -20,
           max: 0,
           ticks: {
             color: '#52525b',

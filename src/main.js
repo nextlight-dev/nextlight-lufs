@@ -26,28 +26,40 @@ fileInput.addEventListener('change', () => {
   if (fileInput.files.length) handleFile(fileInput.files[0])
 })
 
+function showProgress(text) {
+  progress.innerHTML = `<div class="spinner"></div><span>${text}</span>`
+  progress.classList.add('show')
+}
+
+function hideProgress() {
+  progress.classList.remove('show')
+  progress.innerHTML = ''
+}
+
 async function handleFile(file) {
-  progress.textContent = '読み込み中...'
+  showProgress('読み込み中...')
   results.classList.remove('show')
 
   try {
     const arrayBuffer = await file.arrayBuffer()
 
-    progress.textContent = 'デコード中...'
+    showProgress('デコード中...')
     const audioCtx = new AudioContext()
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
     await audioCtx.close()
 
-    progress.textContent = '測定中...'
+    showProgress('測定中...')
     // Defer to next frame so the UI updates
     await new Promise(r => requestAnimationFrame(r))
+    await new Promise(r => setTimeout(r, 50))
 
     const result = measureLUFS(audioBuffer)
 
-    progress.textContent = ''
+    hideProgress()
     showResults(file.name, result)
   } catch (err) {
-    progress.textContent = 'エラー: この形式は対応していません'
+    progress.innerHTML = '<span>エラー: この形式は対応していません</span>'
+    progress.classList.add('show')
     console.error(err)
   }
 }

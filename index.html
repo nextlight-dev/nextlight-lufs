@@ -37,7 +37,22 @@
       text-align: center;
       color: #a1a1aa;
       font-size: 0.875rem;
+      display: none;
     }
+    .progress.show {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid #3f3f46;
+      border-top-color: #a1a1aa;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     /* Results */
     .results { display: none; margin-top: 24px; }
@@ -79,7 +94,8 @@
       border-radius: 8px;
       padding: 16px;
     }
-    .chart-container canvas { width: 100% !important; }
+    .chart-container { max-width: 800px; }
+    .chart-container canvas { width: 100% !important; height: auto !important; }
 
     .info {
       margin-top: 16px;

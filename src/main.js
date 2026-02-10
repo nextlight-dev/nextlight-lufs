@@ -89,6 +89,26 @@ function showResults(name, data) {
 
   document.getElementById('lra').textContent = data.lra.toFixed(1)
 
+  // Head / Tail silence
+  document.getElementById('headSilence').textContent = data.headSilence.toFixed(2)
+  document.getElementById('tailSilence').textContent = data.tailSilence.toFixed(2)
+
+  // Clipping
+  const clipEl = document.getElementById('clipping')
+  clipEl.textContent = data.clippedSamples.toLocaleString()
+  clipEl.className = 'value ' + (data.clippedSamples === 0 ? 'pass' : 'fail')
+
+  // Stereo correlation (only show for stereo)
+  const stereoMetric = document.getElementById('stereoMetric')
+  if (data.stereoCorrelation !== null) {
+    stereoMetric.style.display = ''
+    const corrEl = document.getElementById('stereoCorr')
+    corrEl.textContent = data.stereoCorrelation.toFixed(2)
+    corrEl.className = 'value ' + (data.stereoCorrelation < 0 ? 'fail' : data.stereoCorrelation < 0.3 ? 'warn' : 'pass')
+  } else {
+    stereoMetric.style.display = 'none'
+  }
+
   document.getElementById('info').innerHTML = [
     `再生時間: ${formatTime(data.duration)}`,
     `サンプルレート: ${data.sampleRate} Hz`,
@@ -152,12 +172,15 @@ async function handleBatch(fileList) {
       const intVal = data.integrated === -Infinity ? '--' : data.integrated.toFixed(1)
       const tpVal = data.truePeak === -Infinity ? '--' : data.truePeak.toFixed(1)
 
+      const clipClass = data.clippedSamples === 0 ? 'pass' : 'fail'
       const tr = document.createElement('tr')
       tr.innerHTML = `
         <td class="fname" title="${file.name}">${file.name}</td>
         <td class="num"><span class="${getLufsClass(data.integrated)}">${intVal}</span><span class="unit-cell"> LUFS</span></td>
         <td class="num"><span class="${getTpClass(data.truePeak)}">${tpVal}</span><span class="unit-cell"> dBTP</span></td>
         <td class="num">${data.lra.toFixed(1)}<span class="unit-cell"> LU</span></td>
+        <td class="num">${data.headSilence.toFixed(1)}<span class="unit-cell">s</span> / ${data.tailSilence.toFixed(1)}<span class="unit-cell">s</span></td>
+        <td class="num"><span class="${clipClass}">${data.clippedSamples.toLocaleString()}</span></td>
       `
       batchBody.appendChild(tr)
     } catch (err) {
@@ -166,7 +189,7 @@ async function handleBatch(fileList) {
       tr.className = 'error-row'
       tr.innerHTML = `
         <td class="fname" title="${file.name}">${file.name}</td>
-        <td colspan="3" style="color:#f87171">エラー: 対応していない形式</td>
+        <td colspan="5" style="color:#f87171">エラー: 対応していない形式</td>
       `
       batchBody.appendChild(tr)
     }

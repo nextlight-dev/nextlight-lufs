@@ -169,6 +169,56 @@ export function measureLUFS(audioBuffer) {
     lra = high - low
   }
 
+  // Head / Tail silence detection
+  // Threshold: -60 dBFS ≈ 0.001
+  const silenceThreshold = 0.001
+  const ch0 = audioBuffer.getChannelData(0)
+
+  let headSilenceSamples = 0
+  for (let i = 0; i < numSamples; i++) {
+    let loud = false
+    for (let ch = 0; ch < numChannels; ch++) {
+      if (Math.abs(audioBuffer.getChannelData(ch)[i]) > silenceThreshold) { loud = true; break }
+    }
+    if (loud) break
+    headSilenceSamples++
+  }
+
+  let tailSilenceSamples = 0
+  for (let i = numSamples - 1; i >= 0; i--) {
+    let loud = false
+    for (let ch = 0; ch < numChannels; ch++) {
+      if (Math.abs(audioBuffer.getChannelData(ch)[i]) > silenceThreshold) { loud = true; break }
+    }
+    if (loud) break
+    tailSilenceSamples++
+  }
+
+  // Clipping detection: samples at or above 0.9999 (~0 dBFS)
+  const clipThreshold = 0.9999
+  let clippedSamples = 0
+  for (let ch = 0; ch < numChannels; ch++) {
+    const raw = audioBuffer.getChannelData(ch)
+    for (let i = 0; i < raw.length; i++) {
+      if (Math.abs(raw[i]) >= clipThreshold) clippedSamples++
+    }
+  }
+
+  // Stereo correlation (only for stereo)
+  let stereoCorrelation = null
+  if (numChannels >= 2) {
+    const left = audioBuffer.getChannelData(0)
+    const right = audioBuffer.getChannelData(1)
+    let sumLR = 0, sumLL = 0, sumRR = 0
+    for (let i = 0; i < numSamples; i++) {
+      sumLR += left[i] * right[i]
+      sumLL += left[i] * left[i]
+      sumRR += right[i] * right[i]
+    }
+    const denom = Math.sqrt(sumLL * sumRR)
+    stereoCorrelation = denom > 0 ? sumLR / denom : 0
+  }
+
   return {
     integrated: Math.round(integrated * 10) / 10,
     truePeak: Math.round(truePeakDB * 10) / 10,
@@ -179,6 +229,10 @@ export function measureLUFS(audioBuffer) {
     shortTermTimes,
     duration: numSamples / sampleRate,
     sampleRate,
-    channels: numChannels
+    channels: numChannels,
+    headSilence: headSilenceSamples / sampleRate,
+    tailSilence: tailSilenceSamples / sampleRate,
+    clippedSamples,
+    stereoCorrelation
   }
 }

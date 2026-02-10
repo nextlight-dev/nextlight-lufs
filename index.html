@@ -187,6 +187,21 @@
           <div><span class="value" id="lra">--</span><span class="unit">LU</span></div>
           <div class="desc">曲中の音量差の幅。値が大きいほどダイナミクスが広い。</div>
         </div>
+        <div class="metric">
+          <div class="label">Head / Tail Silence</div>
+          <div><span class="value" id="headSilence">--</span><span class="unit">s</span> <span style="color:#52525b;font-size:0.75rem">/ </span><span class="value" id="tailSilence">--</span><span class="unit">s</span></div>
+          <div class="desc">冒頭・末尾の無音区間。納品時に長すぎないか確認。</div>
+        </div>
+        <div class="metric">
+          <div class="label">Clipping</div>
+          <div><span class="value" id="clipping">--</span><span class="unit">samples</span></div>
+          <div class="desc">0 dBFS に張り付いたサンプル数。0 が理想。</div>
+        </div>
+        <div class="metric" id="stereoMetric" style="display:none">
+          <div class="label">Stereo Correlation</div>
+          <div><span class="value" id="stereoCorr">--</span></div>
+          <div class="desc">L/R の相関。1.0 = モノラル、0 付近 = 広いステレオ、負 = 位相問題あり。</div>
+        </div>
       </div>
 
       <div class="chart-container">
@@ -215,6 +230,8 @@
             <th style="text-align:right">Integrated</th>
             <th style="text-align:right">True Peak</th>
             <th style="text-align:right">LRA</th>
+            <th style="text-align:right">Silence H/T</th>
+            <th style="text-align:right">Clip</th>
           </tr>
         </thead>
         <tbody id="batchBody"></tbody>

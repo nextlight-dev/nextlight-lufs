@@ -9,6 +9,10 @@ const progress = document.getElementById('progress')
 const results = document.getElementById('results')
 
 let chart = null
+let audioEl = null
+let audioUrl = null
+let animFrameId = null
+let currentData = null
 
 // Drop zone events
 dropzone.addEventListener('click', () => fileInput.click())
@@ -39,6 +43,7 @@ function hideProgress() {
 async function handleFile(file) {
   showProgress('読み込み中...')
   results.classList.remove('show')
+  stopAudio()
 
   try {
     const arrayBuffer = await file.arrayBuffer()
@@ -49,13 +54,19 @@ async function handleFile(file) {
     await audioCtx.close()
 
     showProgress('測定中...')
-    // Defer to next frame so the UI updates
     await new Promise(r => requestAnimationFrame(r))
     await new Promise(r => setTimeout(r, 50))
 
     const result = measureLUFS(audioBuffer)
 
+    // Set up audio playback
+    if (audioUrl) URL.revokeObjectURL(audioUrl)
+    audioUrl = URL.createObjectURL(file)
+    setupPlayer(audioUrl, result.duration)
+
     hideProgress()
+    currentData = result
+    showVerdict(result)
     showResults(file.name, result)
   } catch (err) {
     progress.innerHTML = '<span>エラー: この形式は対応していません</span>'
@@ -118,6 +129,130 @@ function showResults(name, data) {
 
   renderChart(data)
   results.classList.add('show')
+}
+
+// --- Verdict banner ---
+function showVerdict(data) {
+  const el = document.getElementById('verdict')
+  const issues = []
+
+  if (data.integrated !== -Infinity) {
+    if (data.integrated > -5) issues.push('Integrated Loudness が高すぎます（配信時に音量が下げられます）')
+    else if (data.integrated < -11) issues.push('Integrated Loudness が低めです（音が小さく聞こえる可能性）')
+  }
+
+  if (data.truePeak > 0) issues.push('True Peak が 0 dBTP を超えています（音割れの危険）')
+  else if (data.truePeak > -1) issues.push('True Peak が -1 dBTP を超えています（余裕が少ない）')
+
+  if (data.clippedSamples > 0) issues.push(`クリッピング検出: ${data.clippedSamples.toLocaleString()} サンプル`)
+
+  if (data.stereoCorrelation !== null && data.stereoCorrelation < 0) {
+    issues.push('ステレオ相関が負です（モノラル再生時に音が消える可能性）')
+  }
+
+  if (data.headSilence > 1) issues.push(`冒頭の無音が ${data.headSilence.toFixed(1)}秒 あります`)
+  if (data.tailSilence > 3) issues.push(`末尾の無音が ${data.tailSilence.toFixed(1)}秒 あります`)
+
+  if (issues.length === 0) {
+    el.className = 'verdict verdict-pass'
+    el.innerHTML = '<div class="verdict-title">問題なし</div><div class="verdict-details">配信の基準を満たしています。</div>'
+  } else {
+    const hasCritical = data.truePeak > 0 || data.clippedSamples > 0 || (data.stereoCorrelation !== null && data.stereoCorrelation < 0)
+    el.className = 'verdict ' + (hasCritical ? 'verdict-fail' : 'verdict-warn')
+    el.innerHTML = `<div class="verdict-title">${hasCritical ? '要確認' : '注意'}</div><div class="verdict-details">${issues.join('<br>')}</div>`
+  }
+}
+
+// --- Audio player ---
+function stopAudio() {
+  if (audioEl) {
+    audioEl.pause()
+    audioEl.src = ''
+    audioEl = null
+  }
+  if (animFrameId) {
+    cancelAnimationFrame(animFrameId)
+    animFrameId = null
+  }
+  document.getElementById('playhead').style.display = 'none'
+}
+
+function setupPlayer(url, duration) {
+  audioEl = new Audio(url)
+  const playBtn = document.getElementById('playBtn')
+  const playIcon = document.getElementById('playIcon')
+  const pauseIcon = document.getElementById('pauseIcon')
+  const playerBar = document.getElementById('playerBar')
+  const playerBarFill = document.getElementById('playerBarFill')
+  const playerTime = document.getElementById('playerTime')
+  const playhead = document.getElementById('playhead')
+
+  playerTime.textContent = `0:00 / ${formatTime(duration)}`
+  playerBarFill.style.width = '0%'
+  playIcon.style.display = ''
+  pauseIcon.style.display = 'none'
+  playhead.style.display = 'none'
+
+  playBtn.onclick = () => {
+    if (audioEl.paused) {
+      audioEl.play()
+      playIcon.style.display = 'none'
+      pauseIcon.style.display = ''
+      startPlayheadSync()
+    } else {
+      audioEl.pause()
+      playIcon.style.display = ''
+      pauseIcon.style.display = 'none'
+      if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null }
+    }
+  }
+
+  playerBar.onclick = (e) => {
+    const rect = playerBar.getBoundingClientRect()
+    const ratio = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width))
+    audioEl.currentTime = ratio * duration
+    updatePlayerUI()
+  }
+
+  audioEl.addEventListener('ended', () => {
+    playIcon.style.display = ''
+    pauseIcon.style.display = 'none'
+    playhead.style.display = 'none'
+    if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null }
+  })
+}
+
+function startPlayheadSync() {
+  const playhead = document.getElementById('playhead')
+  playhead.style.display = ''
+
+  function tick() {
+    updatePlayerUI()
+    animFrameId = requestAnimationFrame(tick)
+  }
+  tick()
+}
+
+function updatePlayerUI() {
+  if (!audioEl || !currentData) return
+  const duration = currentData.duration
+  const current = audioEl.currentTime
+  const ratio = duration > 0 ? current / duration : 0
+
+  document.getElementById('playerBarFill').style.width = (ratio * 100) + '%'
+  document.getElementById('playerTime').textContent = `${formatTime(current)} / ${formatTime(duration)}`
+
+  // Sync playhead with chart
+  if (chart) {
+    const chartArea = chart.chartArea
+    if (chartArea) {
+      const x = chartArea.left + ratio * (chartArea.right - chartArea.left)
+      const playhead = document.getElementById('playhead')
+      playhead.style.left = x + 'px'
+      playhead.style.top = chartArea.top + 'px'
+      playhead.style.height = (chartArea.bottom - chartArea.top) + 'px'
+    }
+  }
 }
 
 // --- Batch measurement ---

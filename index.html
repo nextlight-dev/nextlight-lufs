@@ -88,6 +88,72 @@
     .warn { color: #facc15; }
     .fail { color: #f87171; }
 
+    /* Verdict banner */
+    .verdict {
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+    .verdict.verdict-pass { background: rgba(74, 222, 128, 0.1); border: 1px solid rgba(74, 222, 128, 0.3); }
+    .verdict.verdict-warn { background: rgba(250, 204, 21, 0.08); border: 1px solid rgba(250, 204, 21, 0.3); }
+    .verdict.verdict-fail { background: rgba(248, 113, 113, 0.08); border: 1px solid rgba(248, 113, 113, 0.3); }
+    .verdict-title { font-weight: 700; margin-bottom: 4px; }
+    .verdict-pass .verdict-title { color: #4ade80; }
+    .verdict-warn .verdict-title { color: #facc15; }
+    .verdict-fail .verdict-title { color: #f87171; }
+    .verdict-details { color: #a1a1aa; font-size: 0.8rem; }
+
+    /* Audio player */
+    .player {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: #18181b;
+      border: 1px solid #27272a;
+      border-radius: 8px;
+      padding: 10px 16px;
+    }
+    .play-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: #e4e4e7;
+      color: #09090b;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .play-btn:hover { background: #fff; }
+    .play-btn svg { width: 16px; height: 16px; }
+    .player-time {
+      font-size: 0.75rem;
+      color: #71717a;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      min-width: 80px;
+    }
+    .player-bar {
+      flex: 1;
+      height: 4px;
+      background: #27272a;
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+    }
+    .player-bar-fill {
+      height: 100%;
+      background: #a78bfa;
+      border-radius: 2px;
+      width: 0%;
+      transition: width 0.1s linear;
+    }
+
     /* Chart */
     .chart-container {
       background: #18181b;
@@ -171,6 +237,17 @@
 
     <div class="results" id="results">
       <div class="filename" id="filename"></div>
+      <div class="verdict" id="verdict"></div>
+      <div class="player" id="player">
+        <button class="play-btn" id="playBtn">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="6,4 20,12 6,20"/></svg>
+          <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="5" y="4" width="4" height="16"/><rect x="15" y="4" width="4" height="16"/></svg>
+        </button>
+        <div class="player-bar" id="playerBar">
+          <div class="player-bar-fill" id="playerBarFill"></div>
+        </div>
+        <div class="player-time" id="playerTime">0:00 / 0:00</div>
+      </div>
       <div class="metrics">
         <div class="metric">
           <div class="label">Integrated Loudness</div>
@@ -206,6 +283,7 @@
 
       <div class="chart-container">
         <canvas id="chart"></canvas>
+        <div id="playhead" style="position:absolute;top:0;bottom:0;width:1px;background:#e4e4e7;opacity:0.6;pointer-events:none;display:none"></div>
       </div>
 
       <div class="info" id="info"></div>

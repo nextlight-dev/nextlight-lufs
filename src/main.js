@@ -1,5 +1,6 @@
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js'
 import { measureLUFS } from './lufs.js'
+import { presets } from './presets.js'
 
 Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip)
 
@@ -13,6 +14,24 @@ let audioEl = null
 let audioUrl = null
 let animFrameId = null
 let currentData = null
+let currentFileName = null
+let currentPreset = presets[0]
+
+// --- Preset selector ---
+const presetSelect = document.getElementById('presetSelect')
+presets.forEach(p => {
+  const opt = document.createElement('option')
+  opt.value = p.id
+  opt.textContent = p.name
+  presetSelect.appendChild(opt)
+})
+presetSelect.addEventListener('change', () => {
+  currentPreset = presets.find(p => p.id === presetSelect.value)
+  if (currentData) {
+    showVerdict(currentData)
+    showResults(currentFileName, currentData)
+  }
+})
 
 // Drop zone events
 dropzone.addEventListener('click', () => fileInput.click())
@@ -66,6 +85,7 @@ async function handleFile(file) {
 
     hideProgress()
     currentData = result
+    currentFileName = file.name
     showVerdict(result)
     showResults(file.name, result)
   } catch (err) {
@@ -76,8 +96,9 @@ async function handleFile(file) {
 }
 
 function getLufsClass(lufs) {
-  if (lufs >= -9 && lufs <= -7) return 'pass'
-  if (lufs >= -11 && lufs <= -5) return 'warn'
+  const p = currentPreset.integrated
+  if (lufs >= p.pass[0] && lufs <= p.pass[1]) return 'pass'
+  if (lufs >= p.warn[0] && lufs <= p.warn[1]) return 'warn'
   return 'fail'
 }
 
@@ -96,7 +117,7 @@ function showResults(name, data) {
 
   const tpEl = document.getElementById('truePeak')
   tpEl.textContent = data.truePeak === -Infinity ? '--' : data.truePeak.toFixed(1)
-  tpEl.className = 'value ' + (data.truePeak <= -1 ? 'pass' : data.truePeak <= 0 ? 'warn' : 'fail')
+  tpEl.className = 'value ' + getTpClass(data.truePeak)
 
   document.getElementById('lra').textContent = data.lra.toFixed(1)
 
@@ -119,7 +140,7 @@ function showResults(name, data) {
   // Clipping
   const clipEl = document.getElementById('clipping')
   clipEl.textContent = data.clippedSamples.toLocaleString()
-  clipEl.className = 'value ' + (data.clippedSamples === 0 ? 'pass' : 'fail')
+  clipEl.className = 'value ' + (data.clippedSamples <= currentPreset.clipping ? 'pass' : 'fail')
 
   // Stereo correlation (only show for stereo)
   const stereoMetric = document.getElementById('stereoMetric')
@@ -127,16 +148,18 @@ function showResults(name, data) {
     stereoMetric.style.display = ''
     const corrEl = document.getElementById('stereoCorr')
     corrEl.textContent = data.stereoCorrelation.toFixed(2)
-    corrEl.className = 'value ' + (data.stereoCorrelation < 0 ? 'fail' : data.stereoCorrelation < 0.3 ? 'warn' : 'pass')
+    const sp = currentPreset.stereo
+    corrEl.className = 'value ' + (data.stereoCorrelation >= sp.pass ? 'pass' : data.stereoCorrelation >= sp.warn ? 'warn' : 'fail')
   } else {
     stereoMetric.style.display = 'none'
   }
 
+  const passRange = currentPreset.integrated.pass
   document.getElementById('info').innerHTML = [
     `再生時間: ${formatTime(data.duration)}`,
     `サンプルレート: ${data.sampleRate} Hz`,
     `チャンネル数: ${data.channels}`,
-    `目安: Integrated -7〜-9 LUFS`
+    `目安: Integrated ${passRange[0]}〜${passRange[1]} LUFS`
   ].map(s => `<span>${s}</span>`).join('')
 
   renderChart(data)
@@ -146,34 +169,38 @@ function showResults(name, data) {
 // --- Verdict banner ---
 function showVerdict(data) {
   const el = document.getElementById('verdict')
+  const v = currentPreset.verdict
   const issues = []
 
   if (data.integrated !== -Infinity) {
-    if (data.integrated > -5) issues.push('Integrated Loudness が高すぎます（配信時に音量が下げられます）')
-    else if (data.integrated < -11) issues.push('Integrated Loudness が低めです（音が小さく聞こえる可能性）')
+    if (data.integrated > v.integratedHigh) issues.push('Integrated Loudness が高すぎます（配信時に音量が下げられます）')
+    else if (data.integrated < v.integratedLow) issues.push('Integrated Loudness が低めです（音が小さく聞こえる可能性）')
   }
 
-  if (data.truePeak > 0) issues.push('True Peak が 0 dBTP を超えています（音割れの危険）')
-  else if (data.truePeak > -1) issues.push('True Peak が -1 dBTP を超えています（余裕が少ない）')
+  if (data.truePeak > v.truePeakCritical) issues.push(`True Peak が ${v.truePeakCritical} dBTP を超えています（音割れの危険）`)
+  else if (data.truePeak > v.truePeakWarn) issues.push(`True Peak が ${v.truePeakWarn} dBTP を超えています（余裕が少ない）`)
 
-  if (data.clippedSamples > 0) issues.push(`クリッピング検出: ${data.clippedSamples.toLocaleString()} サンプル`)
+  if (data.clippedSamples > currentPreset.clipping) issues.push(`クリッピング検出: ${data.clippedSamples.toLocaleString()} サンプル`)
 
-  if (data.stereoCorrelation !== null && data.stereoCorrelation < 0) {
+  if (currentPreset.stereo.check && data.stereoCorrelation !== null && data.stereoCorrelation < currentPreset.stereo.warn) {
     issues.push('ステレオ相関が負です（モノラル再生時に音が消える可能性）')
   }
 
-  const zeroThreshold = 0.001
-  if (data.startAmp >= zeroThreshold) issues.push(`先頭のサンプルが非ゼロです（${data.startAmp.toFixed(4)}）→ プチッとノイズの原因`)
-  if (data.endAmp >= zeroThreshold) issues.push(`末尾のサンプルが非ゼロです（${data.endAmp.toFixed(4)}）→ プチッとノイズの原因`)
+  if (currentPreset.zeroCheck) {
+    const zeroThreshold = 0.001
+    if (data.startAmp >= zeroThreshold) issues.push(`先頭のサンプルが非ゼロです（${data.startAmp.toFixed(4)}）→ プチッとノイズの原因`)
+    if (data.endAmp >= zeroThreshold) issues.push(`末尾のサンプルが非ゼロです（${data.endAmp.toFixed(4)}）→ プチッとノイズの原因`)
+  }
 
-  if (data.headSilence > 1) issues.push(`冒頭の無音が ${data.headSilence.toFixed(1)}秒 あります`)
-  if (data.tailSilence > 3) issues.push(`末尾の無音が ${data.tailSilence.toFixed(1)}秒 あります`)
+  if (data.headSilence > currentPreset.silence.head) issues.push(`冒頭の無音が ${data.headSilence.toFixed(1)}秒 あります`)
+  if (data.tailSilence > currentPreset.silence.tail) issues.push(`末尾の無音が ${data.tailSilence.toFixed(1)}秒 あります`)
 
   if (issues.length === 0) {
     el.className = 'verdict verdict-pass'
-    el.innerHTML = '<div class="verdict-title">問題なし</div><div class="verdict-details">配信の基準を満たしています。</div>'
+    el.innerHTML = `<div class="verdict-title">問題なし</div><div class="verdict-details">${currentPreset.name}を満たしています。</div>`
   } else {
-    const hasCritical = data.truePeak > 0 || data.clippedSamples > 0 || (data.stereoCorrelation !== null && data.stereoCorrelation < 0)
+    const hasCritical = data.truePeak > v.truePeakCritical || data.clippedSamples > currentPreset.clipping ||
+      (currentPreset.stereo.check && data.stereoCorrelation !== null && data.stereoCorrelation < currentPreset.stereo.warn)
     el.className = 'verdict ' + (hasCritical ? 'verdict-fail' : 'verdict-warn')
     el.innerHTML = `<div class="verdict-title">${hasCritical ? '要確認' : '注意'}</div><div class="verdict-details">${issues.join('<br>')}</div>`
   }
@@ -294,8 +321,8 @@ batchFileInput.addEventListener('change', () => {
 })
 
 function getTpClass(tp) {
-  if (tp <= -1) return 'pass'
-  if (tp <= 0) return 'warn'
+  if (tp <= currentPreset.truePeak.pass) return 'pass'
+  if (tp <= currentPreset.truePeak.warn) return 'warn'
   return 'fail'
 }
 
@@ -323,14 +350,15 @@ async function handleBatch(fileList) {
       const intVal = data.integrated === -Infinity ? '--' : data.integrated.toFixed(1)
       const tpVal = data.truePeak === -Infinity ? '--' : data.truePeak.toFixed(1)
 
-      const clipClass = data.clippedSamples === 0 ? 'pass' : 'fail'
+      const clipClass = data.clippedSamples <= currentPreset.clipping ? 'pass' : 'fail'
       const zeroThreshold = 0.001
       const zeroSClass = data.startAmp < zeroThreshold ? 'pass' : 'fail'
       const zeroEClass = data.endAmp < zeroThreshold ? 'pass' : 'fail'
       const zeroSVal = data.startAmp < zeroThreshold ? 'OK' : data.startAmp.toFixed(4)
       const zeroEVal = data.endAmp < zeroThreshold ? 'OK' : data.endAmp.toFixed(4)
       const stereoVal = data.stereoCorrelation !== null ? data.stereoCorrelation.toFixed(2) : '--'
-      const stereoClass = data.stereoCorrelation === null ? '' : (data.stereoCorrelation < 0 ? 'fail' : data.stereoCorrelation < 0.3 ? 'warn' : 'pass')
+      const sp = currentPreset.stereo
+      const stereoClass = data.stereoCorrelation === null ? '' : (data.stereoCorrelation >= sp.pass ? 'pass' : data.stereoCorrelation >= sp.warn ? 'warn' : 'fail')
       const tr = document.createElement('tr')
       tr.innerHTML = `
         <td class="fname" title="${file.name}">${file.name}</td>

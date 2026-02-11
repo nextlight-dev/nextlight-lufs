@@ -300,7 +300,7 @@ function getTpClass(tp) {
 }
 
 async function handleBatch(fileList) {
-  const files = Array.from(fileList).slice(0, 10)
+  const files = Array.from(fileList).slice(0, 50)
   batchBody.innerHTML = ''
   batchResults.classList.add('show')
 
@@ -324,14 +324,24 @@ async function handleBatch(fileList) {
       const tpVal = data.truePeak === -Infinity ? '--' : data.truePeak.toFixed(1)
 
       const clipClass = data.clippedSamples === 0 ? 'pass' : 'fail'
+      const zeroThreshold = 0.001
+      const zeroSClass = data.startAmp < zeroThreshold ? 'pass' : 'fail'
+      const zeroEClass = data.endAmp < zeroThreshold ? 'pass' : 'fail'
+      const zeroSVal = data.startAmp < zeroThreshold ? 'OK' : data.startAmp.toFixed(4)
+      const zeroEVal = data.endAmp < zeroThreshold ? 'OK' : data.endAmp.toFixed(4)
+      const stereoVal = data.stereoCorrelation !== null ? data.stereoCorrelation.toFixed(2) : '--'
+      const stereoClass = data.stereoCorrelation === null ? '' : (data.stereoCorrelation < 0 ? 'fail' : data.stereoCorrelation < 0.3 ? 'warn' : 'pass')
       const tr = document.createElement('tr')
       tr.innerHTML = `
         <td class="fname" title="${file.name}">${file.name}</td>
         <td class="num"><span class="${getLufsClass(data.integrated)}">${intVal}</span><span class="unit-cell"> LUFS</span></td>
         <td class="num"><span class="${getTpClass(data.truePeak)}">${tpVal}</span><span class="unit-cell"> dBTP</span></td>
         <td class="num">${data.lra.toFixed(1)}<span class="unit-cell"> LU</span></td>
+        <td class="num">${formatTime(data.duration)}</td>
         <td class="num">${data.headSilence.toFixed(1)}<span class="unit-cell">s</span> / ${data.tailSilence.toFixed(1)}<span class="unit-cell">s</span></td>
+        <td class="num"><span class="${zeroSClass}">${zeroSVal}</span><span class="unit-cell"> / </span><span class="${zeroEClass}">${zeroEVal}</span></td>
         <td class="num"><span class="${clipClass}">${data.clippedSamples.toLocaleString()}</span></td>
+        <td class="num"><span class="${stereoClass}">${stereoVal}</span></td>
       `
       batchBody.appendChild(tr)
     } catch (err) {
@@ -340,7 +350,7 @@ async function handleBatch(fileList) {
       tr.className = 'error-row'
       tr.innerHTML = `
         <td class="fname" title="${file.name}">${file.name}</td>
-        <td colspan="5" style="color:#f87171">エラー: 対応していない形式</td>
+        <td colspan="8" style="color:#f87171">エラー: 対応していない形式</td>
       `
       batchBody.appendChild(tr)
     }

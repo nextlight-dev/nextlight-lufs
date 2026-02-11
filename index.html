@@ -198,12 +198,13 @@
     }
 
     .batch-results { display: none; margin-top: 16px; }
-    .batch-results.show { display: block; }
+    .batch-results.show { display: block; overflow-x: auto; }
 
     .batch-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.8rem;
+      min-width: 900px;
     }
     .batch-table th {
       text-align: left;
@@ -309,7 +310,7 @@
     <h2>一括測定</h2>
     <div class="dropzone" id="batchDropzone">
       <p>複数の音源ファイルをドロップ、またはクリックして選択</p>
-      <p class="hint">最大10曲 / WAV / MP3 / FLAC / OGG / AAC 対応</p>
+      <p class="hint">最大50曲 / WAV / MP3 / FLAC / OGG / AAC 対応</p>
       <input type="file" id="batchFileInput" accept="audio/*" multiple>
     </div>
 
@@ -323,8 +324,11 @@
             <th style="text-align:right">Integrated</th>
             <th style="text-align:right">True Peak</th>
             <th style="text-align:right">LRA</th>
+            <th style="text-align:right">Duration</th>
             <th style="text-align:right">Silence H/T</th>
+            <th style="text-align:right">Zero S/E</th>
             <th style="text-align:right">Clip</th>
+            <th style="text-align:right">Stereo</th>
           </tr>
         </thead>
         <tbody id="batchBody"></tbody>

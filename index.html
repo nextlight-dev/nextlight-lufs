@@ -265,6 +265,16 @@
           <div class="desc">冒頭・末尾の無音区間。納品時に長すぎないか確認。</div>
         </div>
         <div class="metric">
+          <div class="label">Duration</div>
+          <div><span class="value" id="duration">--</span></div>
+          <div class="desc">楽曲の長さ。</div>
+        </div>
+        <div class="metric">
+          <div class="label">Zero Start / End</div>
+          <div><span class="value" id="zeroStart">--</span><span style="color:#52525b;font-size:0.75rem"> / </span><span class="value" id="zeroEnd">--</span></div>
+          <div class="desc">先頭・末尾のサンプル値が 0 か。非ゼロだとプチッとノイズが出る。</div>
+        </div>
+        <div class="metric">
           <div class="label">Clipping</div>
           <div><span class="value" id="clipping">--</span><span class="unit">samples</span></div>
           <div class="desc">0 dBFS に張り付いたサンプル数。0 が理想。</div>

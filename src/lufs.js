@@ -204,6 +204,15 @@ export function measureLUFS(audioBuffer) {
     }
   }
 
+  // Zero-start/end check (pop/click prevention)
+  let startAmp = 0
+  let endAmp = 0
+  for (let ch = 0; ch < numChannels; ch++) {
+    const raw = audioBuffer.getChannelData(ch)
+    startAmp = Math.max(startAmp, Math.abs(raw[0]))
+    endAmp = Math.max(endAmp, Math.abs(raw[raw.length - 1]))
+  }
+
   // Stereo correlation (only for stereo)
   let stereoCorrelation = null
   if (numChannels >= 2) {
@@ -233,6 +242,8 @@ export function measureLUFS(audioBuffer) {
     headSilence: headSilenceSamples / sampleRate,
     tailSilence: tailSilenceSamples / sampleRate,
     clippedSamples,
-    stereoCorrelation
+    stereoCorrelation,
+    startAmp,
+    endAmp
   }
 }

@@ -49,7 +49,7 @@ async function handleFile(file) {
     const arrayBuffer = await file.arrayBuffer()
 
     showProgress('デコード中...')
-    const audioCtx = new AudioContext()
+    const audioCtx = new AudioContext({ sampleRate: 48000 })
     const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
     await audioCtx.close()
 
@@ -100,6 +100,18 @@ function showResults(name, data) {
 
   document.getElementById('lra').textContent = data.lra.toFixed(1)
 
+  // Duration
+  document.getElementById('duration').textContent = formatTime(data.duration)
+
+  // Zero start / end
+  const zeroThreshold = 0.001
+  const startEl = document.getElementById('zeroStart')
+  const endEl = document.getElementById('zeroEnd')
+  startEl.textContent = data.startAmp < zeroThreshold ? 'OK' : data.startAmp.toFixed(4)
+  startEl.className = 'value ' + (data.startAmp < zeroThreshold ? 'pass' : 'fail')
+  endEl.textContent = data.endAmp < zeroThreshold ? 'OK' : data.endAmp.toFixed(4)
+  endEl.className = 'value ' + (data.endAmp < zeroThreshold ? 'pass' : 'fail')
+
   // Head / Tail silence
   document.getElementById('headSilence').textContent = data.headSilence.toFixed(2)
   document.getElementById('tailSilence').textContent = data.tailSilence.toFixed(2)
@@ -149,6 +161,10 @@ function showVerdict(data) {
   if (data.stereoCorrelation !== null && data.stereoCorrelation < 0) {
     issues.push('ステレオ相関が負です（モノラル再生時に音が消える可能性）')
   }
+
+  const zeroThreshold = 0.001
+  if (data.startAmp >= zeroThreshold) issues.push(`先頭のサンプルが非ゼロです（${data.startAmp.toFixed(4)}）→ プチッとノイズの原因`)
+  if (data.endAmp >= zeroThreshold) issues.push(`末尾のサンプルが非ゼロです（${data.endAmp.toFixed(4)}）→ プチッとノイズの原因`)
 
   if (data.headSilence > 1) issues.push(`冒頭の無音が ${data.headSilence.toFixed(1)}秒 あります`)
   if (data.tailSilence > 3) issues.push(`末尾の無音が ${data.tailSilence.toFixed(1)}秒 あります`)
@@ -299,7 +315,7 @@ async function handleBatch(fileList) {
 
     try {
       const arrayBuffer = await file.arrayBuffer()
-      const audioCtx = new AudioContext()
+      const audioCtx = new AudioContext({ sampleRate: 48000 })
       const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer)
       await audioCtx.close()
 
